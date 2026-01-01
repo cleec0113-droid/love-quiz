@@ -85,7 +85,7 @@ boy:{
 }
 };
 
-let role=null, idx=0, score=0;
+let role=null, idx=0, score=0, answers=[];
 
 function render(){
  const app=document.getElementById("app");
@@ -97,20 +97,38 @@ function render(){
  }
  const data=quizzes[role];
  const q=data.q[idx];
- if(!q){
-  localStorage.setItem("loveQuiz_"+role,score);
-  app.innerHTML=`<h2>完成 ❤️</h2>
+if(!q){
+  localStorage.setItem("loveQuiz_"+role, JSON.stringify(answers));
+  app.innerHTML = `<h2>完成 ❤️</h2>
   <p>${data.name} 得分：${score}/25</p>
-  <small>作答紀錄已儲存</small>`;
+  <hr>` +
+  answers.map((a,i)=>`
+    <p>
+      <b>第 ${i+1} 題：</b>${a.question}<br>
+      你的答案：${a.your}
+      ${a.isCorrect ? " ✅" : " ❌（正確是："+a.correct+"）"}
+    </p>
+  `).join("");
   return;
- }
+}
  app.innerHTML=`<h3>第 ${idx+1} 題（第 ${q.y} 年）</h3>
  <p>${q.q}</p>`+
  q.o.map((x,i)=>`<button onclick="ans(${i})">${x}</button>`).join("");
 }
 
 function start(r){ role=r; idx=0; score=0; render(); }
-function ans(i){ if(i===quizzes[role].q[idx].a) score++; idx++; render(); }
+function ans(i){
+  const q = quizzes[role].q[idx];
+  answers.push({
+    question: q.q,
+    your: q.o[i],
+    correct: q.o[q.a],
+    isCorrect: i === q.a
+  });
+  if(i === q.a) score++;
+  idx++;
+  render();
+}
 
 render();
 </script>
